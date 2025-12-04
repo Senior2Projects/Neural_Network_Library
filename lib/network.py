@@ -27,6 +27,9 @@ class Network:
             optimizer.step(self.layers)
             if verbose and epoch % 500 == 0:
                 print(f"Epoch {epoch}, Loss: {loss:.6f}")
+                
+    def predict(self, X):
+        return self.forward(X)
 
     def summary(self):
         print("\nNetwork Architecture:")

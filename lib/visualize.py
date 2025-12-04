@@ -16,13 +16,18 @@ def plot_decision_boundary(model, X, y, resolution=300):
     Automatically detects if the task is binary (y = [-1,1] or [0,1])
     or multi-class (one-hot vectors), then calls the appropriate plotter.
     """
-
     # Detect binary vs multiclass
     if y.ndim == 1 or y.shape[1] == 1:
         _plot_binary_boundary(model, X, y, resolution)
     else:
         _plot_multiclass_boundary(model, X, y, resolution)
 
+# Helper to get predictions regardless of model type (Function vs Class)
+def _predict(model, X):
+    if hasattr(model, "forward"):
+        return model.forward(X)
+    else:
+        return model(X)
 
 # ----------------------------------------------------------------------
 #       BINARY CLASSIFICATION PLOTTER
@@ -41,9 +46,9 @@ def _plot_binary_boundary(model, X, y, resolution):
         np.linspace(y_min, y_max, resolution)
     )
 
-    # Predict on grid
+    # Predict on grid using the helper function
     grid = np.c_[xx.ravel(), yy.ravel()]
-    Z = model.forward(grid).reshape(xx.shape)
+    Z = _predict(model, grid).reshape(xx.shape)
 
     # Create figure
     fig, ax = plt.subplots(figsize=(11, 9))
@@ -58,8 +63,7 @@ def _plot_binary_boundary(model, X, y, resolution):
         target = y[i][0]
 
         color = "red" if target > 0 else "blue"
-        label_txt = "+1" if target > 0 else "-1"
-
+        
         ax.scatter(
             x_pt, y_pt, 
             c=color, s=300, marker="o",
@@ -74,7 +78,7 @@ def _plot_binary_boundary(model, X, y, resolution):
 
     # Labels & style
     ax.set_title(
-        "Binary Decision Boundary (Your Neural Network)",
+        "Binary Decision Boundary",
         fontsize=16, fontweight="bold"
     )
     ax.set_xlabel("x₁", fontsize=14)
@@ -101,7 +105,7 @@ def _plot_binary_boundary(model, X, y, resolution):
 
 
 # ----------------------------------------------------------------------
-#      MULTI-CLASS CLASSIFICATION PLOTTER
+#       MULTI-CLASS CLASSIFICATION PLOTTER
 # ----------------------------------------------------------------------
 def _plot_multiclass_boundary(model, X, y, resolution):
     print("\n" + "=" * 70)
@@ -117,9 +121,9 @@ def _plot_multiclass_boundary(model, X, y, resolution):
         np.linspace(y_min, y_max, resolution)
     )
 
-    # Predict on grid
+    # Predict on grid using helper function
     grid = np.c_[xx.ravel(), yy.ravel()]
-    logits = model.forward(grid)
+    logits = _predict(model, grid)
     Z = np.argmax(logits, axis=1).reshape(xx.shape)
 
     # Figure
@@ -146,7 +150,7 @@ def _plot_multiclass_boundary(model, X, y, resolution):
 
     # Labels
     ax.set_title(
-        "Multi-Class Decision Boundary (Your Neural Network)",
+        "Multi-Class Decision Boundary",
         fontsize=16, fontweight="bold"
     )
     ax.set_xlabel("x₁", fontsize=14)
@@ -155,7 +159,7 @@ def _plot_multiclass_boundary(model, X, y, resolution):
 
     # Legend
     unique_classes = np.unique(Z)
-    legend_elements = [Patch(label=f"Class {c}", facecolor="lightgray")]
+    legend_elements = [Patch(label=f"Class {int(c)}", facecolor="lightgray") for c in unique_classes]
     ax.legend(handles=legend_elements, fontsize=12, loc="upper right")
 
     plt.tight_layout()
