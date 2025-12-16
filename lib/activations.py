@@ -4,11 +4,16 @@ from .layers import Layer
 class Sigmoid(Layer):
     # Forward pass: standard sigmoid activation
     def forward(self, x):
-        self.out = np.where(
-            x >= 0,
-            1 / (1 + np.exp(-x)),
-            np.exp(x) / (1 + np.exp(x))
-        )
+        out = np.empty_like(x, dtype=float)
+        pos_mask = (x >= 0)
+        
+        # For positive x
+        out[pos_mask] = 1 / (1 + np.exp(-x[pos_mask]))
+        
+        # For negative x
+        out[~pos_mask] = np.exp(x[~pos_mask]) / (1 + np.exp(x[~pos_mask]))
+        
+        self.out = out
         return self.out
 
     # Backward pass: derivative of sigmoid = s*(1-s)

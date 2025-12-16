@@ -1,9 +1,39 @@
+import numpy as np
+
 class Network:
     """Container class: holds layers, performs forward/backward passes, training."""
 
     def __init__(self, layers):
         self.layers = layers
         self.loss_history = []
+
+    def save_weights(self, filename="model_weights.npz"):
+        """Saves weights (W) and biases (b) of all Dense layers to a single .npz file."""
+        weight_dict = {}
+        for i, layer in enumerate(self.layers):
+            if hasattr(layer, "W") and hasattr(layer, "b"):
+                # Use a unique key for each weight/bias (e.g., 'L0_W', 'L0_b', 'L2_W', etc.)
+                weight_dict[f"L{i}_W"] = layer.W
+                weight_dict[f"L{i}_b"] = layer.b
+        
+        # np.savez saves all keyword arguments as individual arrays in a single file
+        np.savez(filename, **weight_dict)
+        print(f"✅ Weights saved to {filename}")
+
+    def load_weights(self, filename="model_weights.npz"):
+        """Loads weights (W) and biases (b) from a .npz file into all Dense layers."""
+        try:
+            loaded_data = np.load(filename)
+        except FileNotFoundError:
+            print(f"❌ Error: Weights file not found at {filename}")
+            return
+
+        for i, layer in enumerate(self.layers):
+            if hasattr(layer, "W") and hasattr(layer, "b"):
+                layer.W = loaded_data[f"L{i}_W"]
+                layer.b = loaded_data[f"L{i}_b"]
+        print(f"✅ Weights loaded from {filename}")
+
 
     def forward(self, x):
         # Pass input through each layer

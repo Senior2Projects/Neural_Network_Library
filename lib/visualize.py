@@ -168,3 +168,23 @@ def _plot_multiclass_boundary(model, X, y, resolution):
     print("=" * 70)
     print("Multi-class decision boundary visualization complete!")
     print("=" * 70)
+
+def visualize_reconstruction(model, X_original, n_samples=5):
+    # Get model predictions (reconstructions)
+    reconstructed = model.forward(X_original[:n_samples])
+    
+    plt.figure(figsize=(10, 4))
+    for i in range(n_samples):
+        # Plot Original
+        ax = plt.subplot(2, n_samples, i + 1)
+        plt.imshow(X_original[i].reshape(28, 28), cmap='gray')
+        plt.title("Original")
+        plt.axis("off")
+        
+        # Plot Reconstructed
+        ax = plt.subplot(2, n_samples, i + 1 + n_samples)
+        plt.imshow(reconstructed[i].reshape(28, 28), cmap='gray')
+        plt.title("Reconstructed")
+        plt.axis("off")
+    plt.tight_layout()
+    plt.show()
